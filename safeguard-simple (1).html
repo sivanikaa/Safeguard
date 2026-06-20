@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SafeGuard – Women Safety Platform</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+  :root{
+    --primary:#c0395b; --primary-dark:#96223f; --primary-light:#f7d6de;
+    --success:#2a9d8f; --danger:#e63946; --info:#457b9d; --warning:#e9c46a;
+    --bg:#fff8f9; --card:#ffffff; --border:#f0d6dc; --text:#1a1a2e; --muted:#6b7280;
+    --radius:14px; --shadow:0 4px 20px rgba(192,57,91,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  .hidden{display:none !important;}
+
+  /* ---------- Auth screens ---------- */
+  .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+    background:linear-gradient(135deg,var(--primary-dark),var(--primary));}
+  .auth-box{background:var(--card);border-radius:var(--radius);padding:36px 32px;max-width:380px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.25);}
+  .auth-box .logo{text-align:center;font-size:2.6rem;color:var(--primary);margin-bottom:6px;}
+  .auth-box h1{text-align:center;font-size:1.5rem;margin-bottom:4px;}
+  .auth-box p.sub{text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:22px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:.82rem;font-weight:600;margin-bottom:5px;}
+  .field input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:.95rem;outline:none;transition:.2s;}
+  .field input:focus{border-color:var(--primary);}
+  .btn{width:100%;padding:12px;border:none;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer;transition:.2s;}
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-dark);}
+  .switch-link{text-align:center;margin-top:18px;font-size:.85rem;color:var(--muted);}
+  .switch-link a{color:var(--primary);font-weight:700;cursor:pointer;text-decoration:none;}
+  .err{color:var(--danger);font-size:.8rem;margin-top:8px;text-align:center;min-height:18px;}
+  .demo-hint{margin-top:16px;padding:10px 14px;background:var(--bg);border:1px dashed var(--border);border-radius:8px;font-size:.78rem;color:var(--muted);text-align:center;}
+
+  /* ---------- App shell ---------- */
+  .app{display:none;min-height:100vh;}
+  .app.active{display:block;}
+  .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+  .topbar .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.1rem;color:var(--primary-dark);}
+  .topbar .brand i{font-size:1.4rem;}
+  .topbar .user-info{display:flex;align-items:center;gap:12px;font-size:.85rem;}
+  .topbar .logout-btn{background:var(--bg);border:1px solid var(--border);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--text);}
+  .topbar .logout-btn:hover{background:var(--primary-light);}
+
+  .tabs{display:flex;gap:6px;padding:14px 20px 0;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--border);}
+  .tab-btn{padding:10px 18px;border:none;background:none;font-size:.88rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
+  .tab-btn.active{color:var(--primary);border-color:var(--primary);}
+
+  .page{padding:24px 20px;max-width:760px;margin:0 auto;}
+  .page-section{display:none;}
+  .page-section.active{display:block;}
+  h2.page-title{font-size:1.3rem;margin-bottom:4px;}
+  p.page-desc{color:var(--muted);font-size:.85rem;margin-bottom:20px;}
+
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px;}
+
+  /* ---------- SOS ---------- */
+  .sos-area{text-align:center;padding:20px 0;}
+  .sos-btn{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff6b7a,var(--danger));
+    border:none;color:#fff;font-size:2.2rem;font-weight:800;letter-spacing:3px;cursor:pointer;
+    box-shadow:0 0 0 0 rgba(230,57,70,.5);animation:pulse 2.2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(230,57,70,.5);}70%{box-shadow:0 0 0 35px rgba(230,57,70,0);}100%{box-shadow:0 0 0 0 rgba(230,57,70,0);}}
+  .sos-btn:hover{transform:scale(1.04);}
+  .sos-tip{margin-top:16px;color:var(--muted);font-size:.85rem;}
+  .sos-result{margin-top:20px;text-align:left;padding:16px;border-radius:10px;background:#fde8ed;border-left:4px solid var(--danger);display:none;}
+  .sos-result.show{display:block;}
+
+  /* ---------- Contacts ---------- */
+  .contact-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;background:var(--card);}
+  .contact-row .avatar{width:40px;height:40px;border-radius:50%;background:var(--primary-light);color:var(--primary);
+    display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;}
+  .contact-row .info{flex:1;}
+  .contact-row .info .name{font-weight:700;font-size:.92rem;}
+  .contact-row .info .meta{font-size:.78rem;color:var(--muted);}
+  .icon-btn-sm{width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+  .icon-btn-sm.del{background:#fde8ed;color:var(--danger);}
+  .icon-btn-sm.call{background:#d4f5f1;color:var(--success);}
+  .empty{text-align:center;padding:30px 10px;color:var(--muted);}
+  .empty i{font-size:2.2rem;display:block;margin-bottom:8px;}
+
+  /* ---------- Alerts ---------- */
+  .alert-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;}
+  .alert-row .ic{width:36px;height:36px;border-radius:50%;background:#fde8ed;color:var(--danger);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .alert-row .info{flex:1;font-size:.85rem;}
+  .alert-row .info .t{font-weight:700;}
+  .alert-row .info .d{color:var(--muted);font-size:.78rem;}
+  .badge{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;background:#d4f5f1;color:var(--success);}
+
+  /* ---------- Toast ---------- */
+  #toasts{position:fixed;top:76px;right:16px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+  .toast{padding:12px 18px;border-radius:8px;color:#fff;font-size:.85rem;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,.2);animation:slideIn .3s;max-width:300px;pointer-events:auto;}
+  @keyframes slideIn{from{opacity:0;transform:translateX(40px);}to{opacity:1;transform:translateX(0);}}
+  .toast.success{background:var(--success);} .toast.danger{background:var(--danger);} .toast.warn{background:#e76f51;} .toast.info{background:var(--info);}
+
+  /* ---------- Storage warning ---------- */
+  #storage-warning{display:none;position:fixed;top:0;left:0;right:0;background:var(--danger);color:#fff;padding:12px 16px;text-align:center;font-size:.85rem;z-index:9999;}
+
+  form{margin:0;}
+
+  /* ---------- Dark mode ---------- */
+  body.dark{
+    --bg:#15121f; --card:#1e1a2e; --border:#2e2840; --text:#f0eaf4; --muted:#a89dc2;
+  }
+  body.dark .auth-wrap{background:linear-gradient(135deg,#2d0f1f,#4a1530);}
+  body.dark .demo-hint{background:#1a1628;}
+  body.dark .sos-result{background:#3a1620;}
+
+  /* ---------- Services ---------- */
+  .service-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;background:var(--card);}
+  .service-card .s-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+  .service-card .s-info{flex:1;}
+  .service-card .s-info .s-name{font-weight:700;font-size:.92rem;}
+  .service-card .s-info .s-desc{font-size:.78rem;color:var(--muted);margin-top:2px;}
+  .service-card .s-call{padding:8px 16px;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;text-decoration:none;white-space:nowrap;}
+
+  /* ---------- Tips ---------- */
+  .tip-group{margin-bottom:18px;}
+  .tip-group h3{font-size:.95rem;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .tip-list{list-style:none;}
+  .tip-list li{display:flex;gap:10px;padding:7px 0;font-size:.85rem;border-bottom:1px solid var(--border);}
+  .tip-list li:last-child{border-bottom:none;}
+  .tip-list li i{color:var(--primary);margin-top:3px;flex-shrink:0;}
+
+  /* ---------- Profile ---------- */
+  .profile-hero{text-align:center;padding:28px 20px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:var(--radius);color:#fff;margin-bottom:16px;}
+  .profile-avatar-wrap{position:relative;display:inline-block;margin-bottom:12px;}
+  .profile-avatar{width:88px;height:88px;border-radius:50%;border:3px solid rgba(255,255,255,.5);background:rgba(255,255,255,.2);
+    display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;overflow:hidden;}
+  .profile-avatar img{width:100%;height:100%;object-fit:cover;}
+  .avatar-upload-btn{position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background:#f4a261;color:#fff;border:none;
+    cursor:pointer;font-size:.78rem;display:flex;align-items:center;justify-content:center;}
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;}
+
+  /* ---------- Admin ---------- */
+  .admin-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+  .admin-stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+  .admin-stat .num{font-size:1.5rem;font-weight:800;color:var(--primary);}
+  .admin-stat .lbl{font-size:.72rem;color:var(--muted);margin-top:2px;}
+  .admin-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+  .admin-table th{text-align:left;padding:8px;color:var(--muted);font-size:.72rem;text-transform:uppercase;border-bottom:2px solid var(--border);}
+  .admin-table td{padding:8px;border-bottom:1px solid var(--border);}
+  .role-pill{padding:2px 8px;border-radius:12px;font-size:.7rem;font-weight:700;}
+  .role-pill.admin{background:#fde8ed;color:var(--danger);}
+  .role-pill.user{background:#dbeaf5;color:var(--info);}
+
+  @media(max-width:480px){
+    .auth-box{padding:28px 22px;}
+    .sos-btn{width:150px;height:150px;font-size:1.8rem;}
+    .admin-stat-grid{grid-template-columns:1fr;}
+    .field-row{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+<div id="storage-warning">⚠️ Your browser is blocking local storage on this page. Please open this site via its live URL (not by double-clicking the file), and avoid Private/Incognito mode.</div>
+<div id="toasts"></div>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div class="auth-wrap" id="screen-login">
+  <div class="auth-box">
+    <div class="logo"><i class="fas fa-shield-heart"></i></div>
+    <h1>SafeGuard</h1>
+    <p class="sub">Sign in to your safety dashboard</p>
+    <div style="display:flex;gap:0;margin-bottom:18px;border:1.5px solid var(--border);border-radius:9px;overflow:hidden;">
+      <button type="button" class="role-tab active" data-role="user" style="flex:1;padding:9px;border:none;background:var(--primary);color:#fff;font-size:.82rem;font-weight:700;cursor:pointer;">User</button>
+      <button type="button" class="role-tab" data-role="admin" style="flex:1;padding:9px;border:none;background:var(--bg);color:var(--text);font-size:.82rem;font-weight:700;cursor:pointer;">Admin</button>
+    </div>
+    <form id="login-form">
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="Enter your password" autocomplete="current-password"/>
+      </div>
+      <input type="hidden" id="login-role" value="user"/>
+      <button type="submit" class="btn btn-primary"><i class="fas fa-right-to-bracket"></i> Sign In</button>
+      <div class="err" id="login-err"></div>
+    </form>
+    <div class="demo-hint">User Demo: <strong>demo@safeguard.com</strong> / <strong>demo123</strong><br/>Admin Demo: <strong>admin@safeguard.com</strong> / <strong>admin123</strong></div>
+    <div class="switch-link">Don't have an account? <a id="go-register">Register</a></div>
+  </div>
+</div>
+
+<!-- ============ REGISTER SCREEN ============ -->
+<div class="auth-wrap hidden" id="screen-register">
+  <div class="auth-box">
+    <div class="logo"><i class="fas fa-user-plus"></i></div>
+    <h1>Create Account</h1>
+    <p class="sub">Join SafeGuard in seconds</p>
+    <form id="register-form">
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="Your full name"/>
+      </div>
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="reg-email" placeholder="you@example.com"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="reg-pass" placeholder="At least 4 characters"/>
+      </div>
+      <button type="submit" class="btn btn-primary"><i class="fas fa-user-plus"></i> Create Account</button>
+      <div class="err" id="register-err"></div>
+    </form>
+    <div class="switch-link">Already have an account? <a id="go-login">Sign In</a></div>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="brand"><i class="fas fa-shield-heart"></i> SafeGuard</div>
+    <div class="user-info">
+      <button class="logout-btn" id="theme-toggle" title="Toggle dark mode"><i class="fas fa-moon"></i></button>
+      <span id="topbar-username">User</span>
+      <button class="logout-btn" id="logout-btn"><i class="fas fa-right-from-bracket"></i> Logout</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="sos"><i class="fas fa-triangle-exclamation"></i> SOS</button>
+    <button class="tab-btn" data-tab="contacts"><i class="fas fa-address-book"></i> Contacts</button>
+    <button class="tab-btn" data-tab="services"><i class="fas fa-phone-volume"></i> Services</button>
+    <button class="tab-btn" data-tab="tips"><i class="fas fa-lightbulb"></i> Safety Tips</button>
+    <button class="tab-btn" data-tab="alerts"><i class="fas fa-bell"></i> Alert History</button>
+    <button class="tab-btn" data-tab="profile"><i class="fas fa-user-circle"></i> Profile</button>
+    <button class="tab-btn hidden" data-tab="admin" id="admin-tab-btn"><i class="fas fa-gauge"></i> Admin</button>
+  </div>
+
+  <div class="page">
+
+    <!-- ---- SOS TAB ---- -->
+    <section class="page-section active" id="page-sos">
+      <h2 class="page-title">Emergency SOS</h2>
+      <p class="page-desc">Tap the button below to trigger an emergency alert. Your trusted contacts will be notified instantly.</p>
+      <div class="card sos-area">
+        <button class="sos-btn" id="sos-btn">SOS</button>
+        <p class="sos-tip"><i class="fas fa-hand-pointer"></i> Tap to send an emergency alert</p>
+        <div class="sos-result" id="sos-result"></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:.95rem;margin-bottom:10px;"><i class="fas fa-phone-volume" style="color:var(--primary);"></i> Quick Emergency Numbers</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:.85rem;">
+          <div style="display:flex;justify-content:space-between;"><span>Police</span><a href="tel:100" style="color:var(--primary);font-weight:700;">100</a></div>
+          <div style="display:flex;justify-content:space-between;"><span>Ambulance</span><a href="tel:102" style="color:var(--primary);font-weight:700;">102</a></div>
+          <div style="display:flex;justify-content:space-between;"><span>Women Helpline</span><a href="tel:1091" style="color:var(--primary);font-weight:700;">1091</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- CONTACTS TAB ---- -->
+    <section class="page-section" id="page-contacts">
+      <h2 class="page-title">Trusted Contacts</h2>
+      <p class="page-desc">People who will be notified when you trigger an SOS alert.</p>
+      <div class="card">
+        <form id="contact-form" style="display:flex;flex-direction:column;gap:10px;">
+          <input type="text" id="c-name" placeholder="Full name" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;"/>
+          <div style="display:flex;gap:10px;">
+            <input type="text" id="c-rel" placeholder="Relationship (e.g. Mother)" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;"/>
+            <input type="tel" id="c-phone" placeholder="Phone number" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;"/>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:auto;padding:10px 20px;align-self:flex-start;"><i class="fas fa-plus"></i> Add Contact</button>
+        </form>
+      </div>
+      <div id="contacts-list"></div>
+    </section>
+
+    <!-- ---- ALERTS TAB ---- -->
+    <section class="page-section" id="page-alerts">
+      <h2 class="page-title">Alert History</h2>
+      <p class="page-desc">Log of every SOS alert you've triggered.</p>
+      <div id="alerts-list"></div>
+    </section>
+
+    <!-- ---- SERVICES TAB ---- -->
+    <section class="page-section" id="page-services">
+      <h2 class="page-title">Emergency Services Directory</h2>
+      <p class="page-desc">Quick access to important emergency contact numbers.</p>
+      <div class="service-card">
+        <div class="s-icon" style="background:#dbeaf5;color:var(--info);"><i class="fas fa-shield-halved"></i></div>
+        <div class="s-info"><div class="s-name">Police</div><div class="s-desc">Law &amp; order emergencies, theft, harassment</div></div>
+        <a class="s-call" href="tel:100" style="background:var(--info);"><i class="fas fa-phone"></i> 100</a>
+      </div>
+      <div class="service-card">
+        <div class="s-icon" style="background:#fde8ed;color:var(--danger);"><i class="fas fa-truck-medical"></i></div>
+        <div class="s-info"><div class="s-name">Ambulance</div><div class="s-desc">Medical emergencies and accidents</div></div>
+        <a class="s-call" href="tel:102" style="background:var(--danger);"><i class="fas fa-phone"></i> 102</a>
+      </div>
+      <div class="service-card">
+        <div class="s-icon" style="background:#fdf0e0;color:#e76f51;"><i class="fas fa-fire-extinguisher"></i></div>
+        <div class="s-info"><div class="s-name">Fire Service</div><div class="s-desc">Fire emergencies and rescue operations</div></div>
+        <a class="s-call" href="tel:101" style="background:#e76f51;"><i class="fas fa-phone"></i> 101</a>
+      </div>
+      <div class="service-card">
+        <div class="s-icon" style="background:var(--primary-light);color:var(--primary);"><i class="fas fa-person-dress"></i></div>
+        <div class="s-info"><div class="s-name">Women Helpline</div><div class="s-desc">24/7 support for women in distress</div></div>
+        <a class="s-call" href="tel:1091" style="background:var(--primary);"><i class="fas fa-phone"></i> 1091</a>
+      </div>
+      <div class="service-card">
+        <div class="s-icon" style="background:#d4f5f1;color:var(--success);"><i class="fas fa-phone-flip"></i></div>
+        <div class="s-info"><div class="s-name">National Emergency</div><div class="s-desc">Connects to Police, Fire, or Ambulance</div></div>
+        <a class="s-call" href="tel:112" style="background:var(--success);"><i class="fas fa-phone"></i> 112</a>
+      </div>
+      <div class="service-card">
+        <div class="s-icon" style="background:#ede8f5;color:#7c3aed;"><i class="fas fa-house-crack"></i></div>
+        <div class="s-info"><div class="s-name">Domestic Violence Helpline</div><div class="s-desc">Support, counseling and shelter info</div></div>
+        <a class="s-call" href="tel:181" style="background:#7c3aed;"><i class="fas fa-phone"></i> 181</a>
+      </div>
+    </section>
+
+    <!-- ---- SAFETY TIPS TAB ---- -->
+    <section class="page-section" id="page-tips">
+      <h2 class="page-title">Safety Tips</h2>
+      <p class="page-desc">Practical guidance for staying safe every day.</p>
+      <div class="card">
+        <div class="tip-group">
+          <h3><i class="fas fa-person-walking" style="color:var(--primary);"></i> Personal Safety</h3>
+          <ul class="tip-list">
+            <li><i class="fas fa-check"></i> Stay aware of your surroundings and trust your instincts.</li>
+            <li><i class="fas fa-check"></i> Share your live location with someone you trust.</li>
+            <li><i class="fas fa-check"></i> Keep your phone charged and emergency contacts handy.</li>
+            <li><i class="fas fa-check"></i> Avoid isolated, poorly lit areas, especially at night.</li>
+          </ul>
+        </div>
+        <div class="tip-group">
+          <h3><i class="fas fa-bus" style="color:var(--info);"></i> Travel Safety</h3>
+          <ul class="tip-list">
+            <li><i class="fas fa-check" style="color:var(--info);"></i> Verify cab/driver details before boarding.</li>
+            <li><i class="fas fa-check" style="color:var(--info);"></i> Prefer well-lit, busy stops and stations.</li>
+            <li><i class="fas fa-check" style="color:var(--info);"></i> Use women-only coaches on trains/metro when available.</li>
+          </ul>
+        </div>
+        <div class="tip-group">
+          <h3><i class="fas fa-laptop" style="color:var(--success);"></i> Online Safety</h3>
+          <ul class="tip-list">
+            <li><i class="fas fa-check" style="color:var(--success);"></i> Use strong passwords and enable two-factor authentication.</li>
+            <li><i class="fas fa-check" style="color:var(--success);"></i> Keep social profiles private; don't overshare your location.</li>
+            <li><i class="fas fa-check" style="color:var(--success);"></i> Report and block anyone who makes you uncomfortable.</li>
+          </ul>
+        </div>
+        <div class="tip-group" style="margin-bottom:0;">
+          <h3><i class="fas fa-kit-medical" style="color:var(--danger);"></i> Emergency Preparedness</h3>
+          <ul class="tip-list">
+            <li><i class="fas fa-check" style="color:var(--danger);"></i> Save emergency numbers (100, 102, 112, 1091) on speed dial.</li>
+            <li><i class="fas fa-check" style="color:var(--danger);"></i> Add at least 2-3 trusted contacts in this app.</li>
+            <li><i class="fas fa-check" style="color:var(--danger);"></i> Know your nearest police station and hospital.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- PROFILE TAB ---- -->
+    <section class="page-section" id="page-profile">
+      <h2 class="page-title">My Profile</h2>
+      <p class="page-desc">Manage your personal account details.</p>
+      <div class="profile-hero">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" id="profile-avatar-disp">U</div>
+          <button class="avatar-upload-btn" type="button" id="avatar-upload-btn" title="Change photo"><i class="fas fa-camera"></i></button>
+          <input type="file" id="photo-input" accept="image/*" class="hidden"/>
+        </div>
+        <div style="font-size:1.2rem;font-weight:800;" id="profile-hero-name">User</div>
+        <div style="font-size:.82rem;opacity:.85;" id="profile-hero-email"></div>
+      </div>
+      <div class="card">
+        <form id="profile-form">
+          <div class="field"><label>Full Name</label><input type="text" id="prof-name"/></div>
+          <div class="field"><label>Email Address</label><input type="email" id="prof-email" disabled style="opacity:.6;"/></div>
+          <div class="field"><label>New Password (leave blank to keep current)</label><input type="password" id="prof-pass" placeholder="New password"/></div>
+          <button type="submit" class="btn btn-primary" style="width:auto;padding:10px 22px;"><i class="fas fa-floppy-disk"></i> Save Changes</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ---- ADMIN TAB ---- -->
+    <section class="page-section" id="page-admin">
+      <h2 class="page-title">Admin Panel</h2>
+      <p class="page-desc">Overview of all registered users and emergency alerts.</p>
+      <div class="admin-stat-grid">
+        <div class="admin-stat"><div class="num" id="admin-total-users">0</div><div class="lbl">Total Users</div></div>
+        <div class="admin-stat"><div class="num" id="admin-total-alerts">0</div><div class="lbl">Total Alerts</div></div>
+        <div class="admin-stat"><div class="num" id="admin-total-contacts">0</div><div class="lbl">Trusted Contacts</div></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:.95rem;margin-bottom:12px;"><i class="fas fa-users" style="color:var(--primary);"></i> Registered Users</h3>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Alerts Sent</th></tr></thead>
+            <tbody id="admin-users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+/* ================= STORAGE HELPERS ================= */
+function storageOk(){
+  try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return true; }
+  catch(e){ return false; }
+}
+if(!storageOk()){
+  document.getElementById('storage-warning').style.display='block';
+}
+const LS = {
+  get:(k,fb=null)=>{ try{ const v=JSON.parse(localStorage.getItem(k)); return v===null?fb:v; }catch{ return fb; } },
+  set:(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch{ return false; } }
+};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+/* ================= TOAST ================= */
+function toast(msg,type='info'){
+  const c=document.getElementById('toasts');
+  const icons={success:'fa-check-circle',danger:'fa-exclamation-circle',warn:'fa-triangle-exclamation',info:'fa-info-circle'};
+  const d=document.createElement('div');
+  d.className='toast '+type;
+  d.innerHTML='<i class="fas '+(icons[type]||icons.info)+'"></i> '+msg;
+  c.appendChild(d);
+  setTimeout(()=>{ d.style.opacity='0'; d.style.transition='.3s'; setTimeout(()=>d.remove(),300); },3500);
+}
+
+/* ================= SEED DEMO USER ================= */
+function seed(){
+  let users = LS.get('sg_users', null);
+  if(!users){ users = []; }
+  if(!users.find(u=>u.email==='demo@safeguard.com')){
+    users.push({id:uid(), name:'Demo User', email:'demo@safeguard.com', pass:'demo123', role:'user', photo:''});
+  }
+  if(!users.find(u=>u.email==='admin@safeguard.com')){
+    users.push({id:uid(), name:'Admin', email:'admin@safeguard.com', pass:'admin123', role:'admin', photo:''});
+  }
+  LS.set('sg_users', users);
+}
+seed();
+
+/* ================= SCREEN SWITCHING ================= */
+function showScreen(id){
+  document.getElementById('screen-login').classList.add('hidden');
+  document.getElementById('screen-register').classList.add('hidden');
+  document.getElementById('app').classList.remove('active');
+  if(id==='login') document.getElementById('screen-login').classList.remove('hidden');
+  if(id==='register') document.getElementById('screen-register').classList.remove('hidden');
+  if(id==='app') document.getElementById('app').classList.add('active');
+}
+
+document.getElementById('go-register').addEventListener('click', ()=>showScreen('register'));
+document.getElementById('go-login').addEventListener('click', ()=>showScreen('login'));
+
+/* ================= ROLE TABS ================= */
+document.querySelectorAll('.role-tab').forEach(tab=>{
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.role-tab').forEach(t=>{
+      t.classList.remove('active');
+      t.style.background='var(--bg)'; t.style.color='var(--text)';
+    });
+    tab.classList.add('active');
+    tab.style.background='var(--primary)'; tab.style.color='#fff';
+    document.getElementById('login-role').value = tab.dataset.role;
+  });
+});
+
+/* ================= REGISTER ================= */
+document.getElementById('register-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const pass = document.getElementById('reg-pass').value;
+  const errEl = document.getElementById('register-err');
+  errEl.textContent='';
+
+  if(!name || !email || !pass){ errEl.textContent='Please fill in all fields.'; return; }
+  if(pass.length < 4){ errEl.textContent='Password must be at least 4 characters.'; return; }
+
+  let users = LS.get('sg_users', []);
+  if(users.find(u=>u.email===email)){ errEl.textContent='This email is already registered.'; return; }
+
+  users.push({id:uid(), name, email, pass, role:'user', photo:''});
+  const saved = LS.set('sg_users', users);
+  if(!saved){ errEl.textContent='Could not save your account. Please check your browser storage settings.'; return; }
+
+  toast('Account created! Please sign in.', 'success');
+  document.getElementById('register-form').reset();
+  showScreen('login');
+});
+
+/* ================= LOGIN ================= */
+document.getElementById('login-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass = document.getElementById('login-pass').value;
+  const wantedRole = document.getElementById('login-role').value;
+  const errEl = document.getElementById('login-err');
+  errEl.textContent='';
+
+  if(!email || !pass){ errEl.textContent='Please enter both email and password.'; return; }
+
+  const users = LS.get('sg_users', []);
+  const user = users.find(u=>u.email===email && u.pass===pass);
+  if(!user){ errEl.textContent='Invalid email or password.'; return; }
+  if(wantedRole==='admin' && user.role!=='admin'){ errEl.textContent='This account is not an admin account.'; return; }
+
+  const saved = LS.set('sg_current_user', user);
+  if(!saved){ errEl.textContent='Could not start your session. Storage may be blocked.'; return; }
+
+  enterApp(user);
+});
+
+/* ================= LOGOUT ================= */
+document.getElementById('logout-btn').addEventListener('click', function(){
+  LS.set('sg_current_user', null);
+  toast('Logged out', 'info');
+  document.getElementById('login-form').reset();
+  showScreen('login');
+});
+
+/* ================= ENTER APP ================= */
+function enterApp(user){
+  document.getElementById('topbar-username').textContent = user.name;
+  showScreen('app');
+  toast('Welcome back, '+user.name+'!', 'success');
+  renderContacts();
+  renderAlerts();
+  renderProfile();
+  applyTheme();
+
+  const adminBtn = document.getElementById('admin-tab-btn');
+  if(user.role==='admin'){
+    adminBtn.classList.remove('hidden');
+    renderAdmin();
+  } else {
+    adminBtn.classList.add('hidden');
+    // If currently on admin tab somehow, kick back to SOS
+    if(document.getElementById('page-admin').classList.contains('active')){
+      document.querySelector('.tab-btn[data-tab="sos"]').click();
+    }
+  }
+}
+
+/* ================= TABS ================= */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('page-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ================= CONTACTS ================= */
+function getCurrentUser(){ return LS.get('sg_current_user', null); }
+
+function renderContacts(){
+  const user = getCurrentUser();
+  if(!user) return;
+  const list = LS.get('sg_contacts_'+user.id, []);
+  const el = document.getElementById('contacts-list');
+  if(list.length===0){
+    el.innerHTML = '<div class="empty"><i class="fas fa-user-plus"></i><p>No trusted contacts yet. Add one above.</p></div>';
+    return;
+  }
+  el.innerHTML = list.map(c=>`
+    <div class="contact-row">
+      <div class="avatar">${c.name[0].toUpperCase()}</div>
+      <div class="info">
+        <div class="name">${c.name}</div>
+        <div class="meta">${c.rel||'Contact'} &bull; ${c.phone}</div>
+      </div>
+      <button class="icon-btn-sm call" onclick="window.location.href='tel:${c.phone}'"><i class="fas fa-phone"></i></button>
+      <button class="icon-btn-sm del" onclick="deleteContact('${c.id}')"><i class="fas fa-trash"></i></button>
+    </div>`).join('');
+}
+
+document.getElementById('contact-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const user = getCurrentUser();
+  if(!user) return;
+  const name = document.getElementById('c-name').value.trim();
+  const rel = document.getElementById('c-rel').value.trim();
+  const phone = document.getElementById('c-phone').value.trim();
+  if(!name || !phone){ toast('Name and phone number are required', 'warn'); return; }
+
+  const list = LS.get('sg_contacts_'+user.id, []);
+  list.push({id:uid(), name, rel, phone});
+  LS.set('sg_contacts_'+user.id, list);
+  document.getElementById('contact-form').reset();
+  toast('Contact added!', 'success');
+  renderContacts();
+});
+
+function deleteContact(id){
+  const user = getCurrentUser();
+  if(!user) return;
+  if(!confirm('Delete this contact?')) return;
+  let list = LS.get('sg_contacts_'+user.id, []);
+  list = list.filter(c=>c.id!==id);
+  LS.set('sg_contacts_'+user.id, list);
+  toast('Contact deleted', 'info');
+  renderContacts();
+}
+
+/* ================= SOS ================= */
+document.getElementById('sos-btn').addEventListener('click', function(){
+  const user = getCurrentUser();
+  if(!user) return;
+  if(!confirm('Send an emergency SOS alert now?')) return;
+
+  const alerts = LS.get('sg_alerts_'+user.id, []);
+  const alert = { id:uid(), ts:Date.now(), type:'SOS Emergency', status:'Sent' };
+  alerts.push(alert);
+  LS.set('sg_alerts_'+user.id, alerts);
+
+  const contacts = LS.get('sg_contacts_'+user.id, []);
+  const names = contacts.length ? contacts.map(c=>c.name).join(', ') : 'No trusted contacts added';
+
+  const resultEl = document.getElementById('sos-result');
+  resultEl.classList.add('show');
+  resultEl.innerHTML = `
+    <strong><i class="fas fa-triangle-exclamation" style="color:var(--danger);"></i> SOS ALERT SENT</strong>
+    <p style="margin-top:8px;font-size:.85rem;color:var(--muted);">Notified: <strong>${names}</strong></p>
+    <p style="font-size:.8rem;color:var(--muted);margin-top:4px;">${new Date().toLocaleString()}</p>`;
+
+  toast('🚨 SOS Alert Sent!', 'danger');
+  renderAlerts();
+});
+
+/* ================= ALERTS ================= */
+function renderAlerts(){
+  const user = getCurrentUser();
+  if(!user) return;
+  const alerts = LS.get('sg_alerts_'+user.id, []).slice().reverse();
+  const el = document.getElementById('alerts-list');
+  if(alerts.length===0){
+    el.innerHTML = '<div class="empty"><i class="fas fa-bell-slash"></i><p>No alerts yet. Stay safe!</p></div>';
+    return;
+  }
+  el.innerHTML = alerts.map(a=>`
+    <div class="alert-row">
+      <div class="ic"><i class="fas fa-bell"></i></div>
+      <div class="info">
+        <div class="t">${a.type}</div>
+        <div class="d">${new Date(a.ts).toLocaleString()}</div>
+      </div>
+      <span class="badge">${a.status}</span>
+    </div>`).join('');
+}
+
+/* ================= PROFILE ================= */
+function renderProfile(){
+  const user = getCurrentUser();
+  if(!user) return;
+  document.getElementById('prof-name').value = user.name;
+  document.getElementById('prof-email').value = user.email;
+  document.getElementById('profile-hero-name').textContent = user.name;
+  document.getElementById('profile-hero-email').textContent = user.email;
+  const avatarEl = document.getElementById('profile-avatar-disp');
+  if(user.photo){
+    avatarEl.innerHTML = '<img src="'+user.photo+'" alt="avatar"/>';
+  } else {
+    avatarEl.textContent = user.name[0].toUpperCase();
+    avatarEl.innerHTML = user.name[0].toUpperCase();
+  }
+}
+
+document.getElementById('avatar-upload-btn').addEventListener('click', function(){
+  document.getElementById('photo-input').click();
+});
+
+document.getElementById('photo-input').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const user = getCurrentUser();
+    if(!user) return;
+    user.photo = ev.target.result;
+    LS.set('sg_current_user', user);
+    let users = LS.get('sg_users', []);
+    const idx = users.findIndex(u=>u.id===user.id);
+    if(idx>-1){ users[idx] = user; LS.set('sg_users', users); }
+    renderProfile();
+    toast('Profile photo updated!', 'success');
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('profile-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const user = getCurrentUser();
+  if(!user) return;
+  const newName = document.getElementById('prof-name').value.trim();
+  const newPass = document.getElementById('prof-pass').value;
+  if(!newName){ toast('Name cannot be empty', 'warn'); return; }
+  if(newPass && newPass.length < 4){ toast('Password must be at least 4 characters', 'warn'); return; }
+
+  user.name = newName;
+  if(newPass) user.pass = newPass;
+  LS.set('sg_current_user', user);
+  let users = LS.get('sg_users', []);
+  const idx = users.findIndex(u=>u.id===user.id);
+  if(idx>-1){ users[idx] = user; LS.set('sg_users', users); }
+
+  document.getElementById('topbar-username').textContent = user.name;
+  document.getElementById('prof-pass').value = '';
+  renderProfile();
+  toast('Profile updated successfully!', 'success');
+});
+
+/* ================= DARK MODE ================= */
+function applyTheme(){
+  const dark = LS.get('sg_dark_mode', false);
+  document.body.classList.toggle('dark', !!dark);
+  const btn = document.getElementById('theme-toggle');
+  if(btn) btn.innerHTML = '<i class="fas '+(dark?'fa-sun':'fa-moon')+'"></i>';
+}
+document.getElementById('theme-toggle').addEventListener('click', function(){
+  const current = LS.get('sg_dark_mode', false);
+  LS.set('sg_dark_mode', !current);
+  applyTheme();
+});
+
+/* ================= ADMIN ================= */
+function renderAdmin(){
+  const user = getCurrentUser();
+  if(!user || user.role!=='admin') return;
+  const users = LS.get('sg_users', []);
+  let totalAlerts = 0, totalContacts = 0;
+  users.forEach(u=>{
+    totalAlerts += LS.get('sg_alerts_'+u.id, []).length;
+    totalContacts += LS.get('sg_contacts_'+u.id, []).length;
+  });
+  document.getElementById('admin-total-users').textContent = users.length;
+  document.getElementById('admin-total-alerts').textContent = totalAlerts;
+  document.getElementById('admin-total-contacts').textContent = totalContacts;
+
+  const tbody = document.getElementById('admin-users-tbody');
+  tbody.innerHTML = users.map(u=>{
+    const alertCount = LS.get('sg_alerts_'+u.id, []).length;
+    return '<tr><td>'+u.name+'</td><td>'+u.email+'</td><td><span class="role-pill '+u.role+'">'+u.role+'</span></td><td>'+alertCount+'</td></tr>';
+  }).join('');
+}
+
+/* ================= RESTORE SESSION ON LOAD ================= */
+(function init(){
+  const user = getCurrentUser();
+  if(user){
+    enterApp(user);
+  } else {
+    showScreen('login');
+  }
+})();
+</script>
+</body>
+</html>
